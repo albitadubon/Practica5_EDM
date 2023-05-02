@@ -16,15 +16,77 @@ Apply PDP to the regression example of predicting bike rentals. Fit a random for
 library(randomForestSRC)
 library(ggplot2)
 library(gridExtra)
+library(dplyr)
+library(plotly)
+library(reshape2)
+library(lubridate)
+library(pdp)
 
-days <- read.csv("/Users/albitadubonllamas/Desktop/Practica5EDM/day.csv")
+days <- read.csv("/Users/albitadubonllamas/Desktop/Practica5EDM/day.csv", row.names = 1)
+hour <- read.csv("/Users/albitadubonllamas/Desktop/Practica5EDM/hour.csv")
 ```
 
-```{r}
-model <- rfsrc(cnt~., data=days)
-pdp <- partialPlot(model, x.var = "temp", plot = TRUE)
-)
 
+Preparación base de datos. Ajuste variables:
+
+```{r}
+#class(days$dteday)
+days$dteday <- as_date(days$dteday)
+
+data <- days %>% 
+  mutate(spring = ifelse(season == 1, 1, 0),
+         summer = ifelse(season == 2, 1, 0),
+         fall = ifelse(season == 3, 1, 0))
+data <- data %>% 
+  mutate(MISTY = ifelse(weathersit == 2, 1, 0),
+         RAIN = ifelse(weathersit %in% c(3,4), 1, 0))
+
+data$temp <- days$temp * 39 + (-8)
+data$hum <- days$hum * 100
+data$windspeed <- days$windspeed * 67
+start_date <- as.Date("2011-01-01")
+data$days_since_2011 <- as.numeric(as.Date(days$dteday) - start_date)
+data <- data[, c("holiday", "workingday", "summer", "MISTY", "RAIN", "temp", "fall", "hum", "windspeed", "days_since_2011", "cnt")]
+```
+
+
+Aplico random forest
+```{r, warning=FALSE}
+rf <- randomForest(cnt~., data=data)
+rf
+```
+
+DAYS_SINCE
+
+```{r, warning=FALSE}
+pdp<- pdp::partial(rf, pred.var = 'days_since_2011', plot = F)
+#pdp <- as.data.frame(pdp)
+plot_ly(pdp, x = ~days_since_2011, y = ~yhat, type = "scatter", mode = "lines")
+```
+
+
+HUMIDITY
+
+```{r, warning=FALSE}
+pdp<- pdp::partial(rf, pred.var = 'hum', plot = F)
+#pdp <- as.data.frame(pdp)
+plot_ly(pdp, x = ~hum, y = ~yhat, type = "scatter", mode = "lines")
+```
+
+TEMPERATURE
+
+```{r, warning=FALSE}
+pdp<- pdp::partial(rf, pred.var = 'temp', plot = F)
+#pdp <- as.data.frame(pdp)
+plot_ly(pdp, x = ~temp, y = ~yhat, type = "scatter", mode = "lines")
+```
+
+WIND SPEED
+
+```{r, warning=FALSE}
+pdp<- pdp::partial(rf, pred.var = 'windspeed', plot = F)
+#pdp <- as.data.frame(pdp)
+plot_ly(pdp, x = ~windspeed, y = ~yhat, type = "scatter", mode = "lines")
 ```
 
 #### QUESTION:
