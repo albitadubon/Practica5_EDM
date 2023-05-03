@@ -107,10 +107,15 @@ Show the density distribution of both input features with the 2D plot as shown i
 ##### TIP: Use geom_tile() to generate the 2D plot. Set width and height to avoid holes. 
 
 
+```{r message=FALSE}
 
-```{r}
+sample <- data %>% sample_n(size = 400, replace = FALSE)
+rf_sample <- randomForest(cnt ~., data = sample)
 
+
+pdp::partial(rf_sample, pred.var = c("temp", "hum"), train = sample, grid.resolution = 20, plot=T)
 ```
+
 
 #### QUESTION:
 Interpret the results:
