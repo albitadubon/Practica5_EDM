@@ -154,8 +154,59 @@ Apply the previous concepts to predict the price of a house from the database kc
 ##### BE CAREFUL: due to the size, extract a set of random samples from the BBDD before generating the data for the Partial Dependency Plot. 
 
 ```{r}
+house <- read.csv("/Users/albitadubonllamas/Desktop/Practica5EDM/kc_house_data.csv")
+house_sample <- house %>% sample_n(size = 10000, replace = FALSE)
+```
+
+
+```{r}
+house_data_rf <- house_sample[, c('price',"bedrooms", "bathrooms", "sqft_living", "sqft_lot", "floors", "yr_built")]
+
+rf_house <- randomForest(price~., data=house_data_rf)
+```
+
+
+```{r}
+pdp_bed <- pdp::partial(rf_house, pred.var = "bedrooms", plot = TRUE, plot.engine = "ggplot2") + ylab("Price")
+pdp_bath <- pdp::partial(rf_house, pred.var = "bathrooms", plot = TRUE, plot.engine = "ggplot2") + ylab("Price") + scale_y_continuous(labels = scales::number_format(scale = 1, big.mark = ""))
+pdp_sqft <- pdp::partial(rf_house, pred.var = "sqft_living", plot = TRUE,plot.engine = "ggplot2") + ylab("Price")
+pdp_floors <- pdp::partial(rf_house, pred.var = "floors", plot = TRUE, plot.engine = "ggplot2") + ylab("Price")
+pdp_yr_built <- pdp::partial(rf_house, pred.var = "yr_built", plot = TRUE, plot.engine = "ggplot2") + ylab("Price")
+pdp_sqft_lot <- pdp::partial(rf_house, pred.var = "sqft_lot", plot = TRUE, plot.engine = "ggplot2") + ylab("Price")
+```
+
+```{r}
+library(ggplot2)
+
+p1 <- ggplot(pdp_bed$data, aes(x = bedrooms, y = yhat)) + 
+      geom_line(color = "blue") +
+      labs(title = "PDP for Bedrooms", x = "Bedrooms", y = "Predicted Value")
+
+p2 <- ggplot(pdp_bath$data, aes(x = bathrooms, y = yhat)) + 
+      geom_line(color = "blue") +
+      labs(title = "PDP for Bathrooms", x = "Temperature", y = "Predicted Value")
+
+p3 <- ggplot(pdp_sqft$data, aes(x = sqft_living, y = yhat)) + 
+      geom_line(color = "blue") +
+      labs(title = "PDP for Square Footage", x = "Sqft_living", y = "Predicted Value")
+
+p4 <- ggplot(pdp_floors$data, aes(x = floors, y = yhat)) + 
+      geom_line(color = "blue") +
+      labs(title = "PDP for Number of Floors", x = "Floors", y = "Predicted Value")
+
+p5 <- ggplot(pdp_yr_built$data, aes(x = yr_built, y = yhat)) + 
+      geom_line(color = "blue") +
+      labs(title = "PDP for Year Built", x = "Year Built", y = "Predicted Value")
+
+p6 <- ggplot(pdp_sqft_lot$data, aes(x = sqft_lot, y = yhat)) + 
+      geom_line(color = "blue") +
+      labs(title = "PDP for sqft_lot", x = "sqft_lot", y = "Predicted Value")
+
+plot_grid(p1, p2, p3, p4,p5,p6, ncol = 3, nrow = 2)
 
 ```
+
+
 
 
 #### QUESTION:
