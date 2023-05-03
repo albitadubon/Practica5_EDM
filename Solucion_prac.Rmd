@@ -21,6 +21,8 @@ library(plotly)
 library(reshape2)
 library(lubridate)
 library(pdp)
+library(randomForest)
+
 
 days <- read.csv("/Users/albitadubonllamas/Desktop/Practica5EDM/day.csv", row.names = 1)
 hour <- read.csv("/Users/albitadubonllamas/Desktop/Practica5EDM/hour.csv")
@@ -114,6 +116,26 @@ rf_sample <- randomForest(cnt ~., data = sample)
 
 
 pdp::partial(rf_sample, pred.var = c("temp", "hum"), train = sample, grid.resolution = 20, plot=T)
+```
+
+```{r}
+
+# Density distributions for input features
+
+temp_plot <- ggplot(sample, aes(x = temp)) + 
+  geom_density(fill = "blue", alpha = 0.5) +
+  labs(x = "Temperature", y = "Density") +
+  theme_bw()
+
+hum_plot <- ggplot(sample, aes(x = hum)) + 
+  geom_density(fill = "blue", alpha = 0.5) +
+  labs(x = "Humidity", y = "Density") +
+  theme_bw()
+
+
+
+plot_grid(temp_plot, hum_plot, ncol = 1, nrow = 2)
+
 ```
 
 
