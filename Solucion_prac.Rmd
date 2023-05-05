@@ -12,7 +12,8 @@ The partial dependence plot shows the marginal effect of a feature on the predic
 Apply PDP to the regression example of predicting bike rentals. Fit a random forest approximation for the prediction of bike rentals (cnt). Use the partial dependence plot to visualize the relationships the model learned. Use the slides shown in class as model.  
 
 
-```{r setup}
+```{r setup, warning=F, results=F, echo=TRUE, message=FALSE}
+
 library(randomForestSRC)
 library(ggplot2)
 library(gridExtra)
@@ -22,6 +23,7 @@ library(reshape2)
 library(lubridate)
 library(pdp)
 library(randomForest)
+library(cowplot)
 
 
 days <- read.csv("/Users/albitadubonllamas/Desktop/Practica5EDM/day.csv", row.names = 1)
@@ -52,14 +54,12 @@ data <- data[, c("holiday", "workingday", "summer", "MISTY", "RAIN", "temp", "fa
 ```
 
 
-Aplico random forest
 ```{r, warning=FALSE}
 rf <- randomForest(cnt~., data=data)
 rf
 ```
 
 DAYS_SINCE
-
 ```{r, warning=FALSE}
 pdp<- pdp::partial(rf, pred.var = 'days_since_2011', plot = F)
 #pdp <- as.data.frame(pdp)
@@ -91,9 +91,20 @@ pdp<- pdp::partial(rf, pred.var = 'windspeed', plot = F)
 plot_ly(pdp, x = ~windspeed, y = ~yhat, type = "scatter", mode = "lines")
 ```
 
+
+
 #### QUESTION:
 Analyse the influence of days since 2011, temperature, humidity and wind speed on the predicted bike counts.
 
+After making the graphs of temperature, humidity, and wind speed using bicycles, we observed that the use of bicycles remains at approximately 4,600 uses. However, when humidity exceeds 60%, bicycle usage decreases considerably, even reaching as low as 3,600 daily uses. It is also observed that the highest bicycle usage occurs when humidity is between 40 and 60%.
+
+On the other hand, we have temperature, in which we observe that bicycle usage increases as the temperature rises, indicating a direct relationship between bicycle usage and temperature degrees. However, when the temperature exceeds 20 degrees, usage declines and starts to drop.
+
+Furthermore, if we observe wind speed, we notice an inversely proportional relationship: the higher the wind speed, the lower the bicycle usage. Specifically, when the speed is around 5 km/h, bicycle usage is at its highest, reaching almost 4,700 uses.
+
+Finally, we observe that the graph regarding days since 2011 is more uneven, showing several curves. This might be confusing, suggesting that the day of the year has no relation to bicycle rentals. However, the relationship lies in the fact that even though there are points (days) where demand slightly decreases, it always tends to increase. This leads us to believe that society has become more aware of sustainable vehicles and their usefulness, resulting in an increase in bicycle rentals.
+
+Taking these results into account, we can determine that bicycle rentals depend greatly on the environmental conditions, making it unpleasant for consumers to use them in extreme temperatures, high humidity, and strong wind speeds. Additionally, it can be inferred that as time goes on, the demand for rentals will continue to increase.
 
 -------------------------------------------------------------------------------
 
@@ -119,7 +130,6 @@ pdp::partial(rf_sample, pred.var = c("temp", "hum"), train = sample, grid.resolu
 ```
 
 ```{r}
-
 # Density distributions for input features
 
 temp_plot <- ggplot(sample, aes(x = temp)) + 
@@ -142,6 +152,13 @@ plot_grid(temp_plot, hum_plot, ncol = 1, nrow = 2)
 #### QUESTION:
 Interpret the results:
 
+In the heat map, we can see how temperature and humidity influence the number of rented bicycles. Firstly, regardless of humidity, we observe a clear dependence of bicycle rentals on temperature. We determine this by noticing that there are very few bicycle rentals at extremely low temperatures, even reaching -5. As the temperature increases, the number of rentals also increases. However, we can see a slight decrease in bicycle rentals after reaching a temperature value of 25. This suggests that with very high temperatures, the demand for rentals may start to decrease.
+
+Regarding humidity, we can see that its influence on bicycle rentals is not as pronounced, but there is a repetitive behavior throughout the entire heat map. We observe that higher humidity is associated with fewer bicycle rentals, generally independent of the temperature.
+
+Additionally, we have generated two density plots. The increasing curve of the temperature density indicates a higher concentration of observations in certain temperature ranges. As the temperature increases from 4 to 20, the density remains relatively constant, suggesting an optimal temperature zone where observations are more common. This pattern aligns with the interpretation of the heat map, where an increase in bicycle rentals is observed as the temperature rises.
+
+Lastly, the increasing curve followed by a decrease in humidity density indicates a non-linear relationship between humidity and the number of bicycle rentals. As humidity increases from 0 to approximately 50, the density of bicycle rentals also increases. However, beyond a humidity value of around 50, the density starts to decrease. This suggests that there may be an optimal range of humidity where bicycle rentals are more common, and higher or lower humidity values may be less attractive to users. This trend is consistent with the interpretation of the heat map, where a decrease in bicycle rentals is observed as humidity increases.
 
 -------------------------------------------------------------------------------
 
@@ -213,4 +230,13 @@ plot_grid(p1, p2, p3, p4,p5,p6, ncol = 3, nrow = 2)
 Analyse the influence of bedrooms, bathrooms, sqft_living and floors on the predicted price.
 
 
+In the obtained graphs, we can observe how different features of a house affect its sale price.
 
+Regarding the number of bedrooms, we observe a descending line, indicating that fewer bedrooms correspond to higher housing prices. In this case, we notice a peak around 3 bedrooms and a significant drop starting from approximately 7 bedrooms. This specific result is not conclusive as it goes against the logical supply and demand dynamics of the real estate market. It appears to suggest that the more square meters a house has, the more expensive it will be. However, an increase in the number of bedrooms typically means more space, i.e., more square meters.
+
+On the other hand, the behavior for the number of bathrooms and the number of floors is similar to that of the square footage. This makes sense given the explanation mentioned above. It indicates that as these features increase, the housing price also tends to increase.
+
+Lastly, the year of construction of the house, along with the square footage of the lot, although yielding different results, seem to follow a similar pattern. In both cases, the housing price is higher at the beginning of the x-axis (an older house and a smaller lot size), but after decreasing, it starts to increase again.
+This also appears to be illogical. In the case of the year of construction, it would be more expected to find that newer houses have higher prices in any case, as they tend to have more modern features and be in better condition compared to older houses. Additionally, similar to the square footage of the living area, a larger lot size should result in a higher price, as it has more potential for development and use, as well as providing more space in the house.
+
+Considering all the results, we see that some of them are inconclusive, and therefore, what we can assert is that greater space corresponds to a higher house price, which we observe accurately in the graphs regarding bathrooms, floors, and living area.
